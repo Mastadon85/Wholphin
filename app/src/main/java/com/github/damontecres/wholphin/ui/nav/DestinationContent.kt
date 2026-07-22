@@ -49,6 +49,7 @@ import com.github.damontecres.wholphin.ui.preferences.PreferencesPage
 import com.github.damontecres.wholphin.ui.preferences.subtitle.SubtitleStylePage
 import com.github.damontecres.wholphin.ui.preferences.user.UserProfilePreferencesPage
 import com.github.damontecres.wholphin.ui.setup.InstallUpdatePage
+import com.github.damontecres.wholphin.ui.slideshow.PhotoAlbumPickerPage
 import com.github.damontecres.wholphin.ui.slideshow.SlideshowPage
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.CollectionType
@@ -328,6 +329,13 @@ fun DestinationContent(
         is Destination.Slideshow -> {
             SlideshowPage(
                 slideshow = destination,
+            )
+        }
+
+        Destination.PhotoAlbumPicker -> {
+            PhotoAlbumPickerPage(
+                preferences = preferences,
+                modifier = modifier,
             )
         }
 

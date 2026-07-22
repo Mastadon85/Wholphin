@@ -68,6 +68,7 @@ import com.github.damontecres.wholphin.ui.components.LoadingPage
 import com.github.damontecres.wholphin.ui.components.QueueContextActions
 import com.github.damontecres.wholphin.ui.findActivity
 import com.github.damontecres.wholphin.ui.nav.Backdrop
+import com.github.damontecres.wholphin.ui.nav.Destination
 import com.github.damontecres.wholphin.ui.playback.PlaybackKeyHandler
 import com.github.damontecres.wholphin.ui.playback.isUp
 import com.github.damontecres.wholphin.ui.playback.overlay.BottomDialog
@@ -350,6 +351,7 @@ fun NowPlayingPage(
                 onClickMoreItem = { index, song -> showContextForItem.invoke(false, index, song) },
                 onLongClickSong = { index, song -> showContextForItem.invoke(true, index, song) },
                 onClickStop = { viewModel.stop() },
+                onClickSlideshow = { viewModel.navigationManager.navigateTo(Destination.PhotoAlbumPicker) },
                 lyricsFocusRequester = lyricsFocusRequester,
                 modifier =
                     Modifier

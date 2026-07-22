@@ -73,6 +73,7 @@ fun NowPlayingOverlay(
     onMoveQueue: (Int, MoveDirection) -> Unit,
     onClickMoreItem: (Int, AudioItem) -> Unit,
     onClickStop: () -> Unit,
+    onClickSlideshow: () -> Unit,
     lyricsFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
 ) {
@@ -135,6 +136,7 @@ fun NowPlayingOverlay(
                 initialFocusRequester = focusRequester,
                 onClickMore = onClickMore,
                 onClickStop = onClickStop,
+                onClickSlideshow = onClickSlideshow,
                 modifier =
                     Modifier
                         .fillMaxWidth()

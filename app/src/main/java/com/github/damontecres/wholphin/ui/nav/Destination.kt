@@ -163,6 +163,9 @@ sealed class Destination(
     data object NowPlaying : Destination(true)
 
     @Serializable
+    data object PhotoAlbumPicker : Destination(false)
+
+    @Serializable
     data object UpdateApp : Destination(true)
 
     @Serializable

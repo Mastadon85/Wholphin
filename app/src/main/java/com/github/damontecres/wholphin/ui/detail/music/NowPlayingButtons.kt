@@ -41,6 +41,7 @@ import com.github.damontecres.wholphin.ui.FontAwesome
 import com.github.damontecres.wholphin.ui.PreviewTvSpec
 import com.github.damontecres.wholphin.ui.components.Button
 import com.github.damontecres.wholphin.ui.playback.ControllerViewState
+import com.github.damontecres.wholphin.ui.playback.overlay.PlaybackFaButton
 import com.github.damontecres.wholphin.ui.playback.overlay.PlaybackAction
 import com.github.damontecres.wholphin.ui.playback.overlay.PlaybackButton
 import com.github.damontecres.wholphin.ui.playback.overlay.PlaybackButtons
@@ -57,6 +58,7 @@ fun NowPlayingButtons(
     initialFocusRequester: FocusRequester,
     onClickMore: () -> Unit,
     onClickStop: () -> Unit,
+    onClickSlideshow: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val playPauseState = rememberPlayPauseButtonState(player)
@@ -87,6 +89,16 @@ fun NowPlayingButtons(
                 iconRes = R.drawable.baseline_stop_24,
                 onClick = {
                     onClickStop.invoke()
+                },
+                enabled = true,
+                onControllerInteraction = onControllerInteraction,
+                modifier = Modifier,
+            )
+            PlaybackFaButton(
+                iconRes = R.string.fa_images,
+                onClick = {
+                    onControllerInteraction.invoke()
+                    onClickSlideshow.invoke()
                 },
                 enabled = true,
                 onControllerInteraction = onControllerInteraction,

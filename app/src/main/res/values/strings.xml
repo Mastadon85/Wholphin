@@ -872,4 +872,9 @@
     <string name="override_user_profile_settings">More user profile settings</string>
     <string name="override_user_profile_settings_summary">Override your user profile settings from the server</string>
     <string name="any_language">Any language</string>
+
+    <string name="slideshow_with_music">Slideshow</string>
+    <string name="select_photo_album">Select Photo Album</string>
+    <string name="photo_album_picker">Choose a Photo Album</string>
+    <string name="no_photo_libraries">No photo libraries found</string>
 </resources>
