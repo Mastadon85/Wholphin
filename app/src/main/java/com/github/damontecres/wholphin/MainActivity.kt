@@ -235,7 +235,7 @@ class MainActivity : AppCompatActivity() {
                 val userPreferences by userPreferencesService.flow.collectAsState(null)
                 if (userPreferences == null) {
                     // Show loading page if it is taking a while to get app preferences
-                    var showLoading by remember { mutableStateOf(false) }
+                    var showLoading by remember { mutableStateOf(value = false) }
                     LaunchedEffect(Unit) {
                         delay(500.milliseconds)
                         Timber.i("Showing loading page")
@@ -265,7 +265,7 @@ class MainActivity : AppCompatActivity() {
                         }
                         CompositionLocalProvider(LocalImageUrlService provides imageUrlService) {
                             WholphinTheme(
-                                true,
+                                darkTheme = true,
                                 appThemeColors = appPreferences.interfacePreferences.appThemeColors,
                             ) {
                                 ProvideLocalClock {
@@ -287,13 +287,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (screensaverService.state.value.show) {
-            screensaverService.stop(false)
+        return if (screensaverService.state.value.show) {
+            screensaverService.stop(cancelJob = false)
             screensaverService.pulse()
-            return true
+            true
         } else {
             screensaverService.pulse()
-            return super.dispatchKeyEvent(event)
+            super.dispatchKeyEvent(event)
         }
     }
 
@@ -556,6 +556,6 @@ class MainActivityViewModel
 
 private val Destination?.isPlayback: Boolean
     get() =
-        this is Destination.Playback ||
-            this is Destination.PlaybackList ||
-            this is Destination.Slideshow
+        (this is Destination.Playback) ||
+            (this is Destination.PlaybackList) ||
+            (this is Destination.Slideshow)

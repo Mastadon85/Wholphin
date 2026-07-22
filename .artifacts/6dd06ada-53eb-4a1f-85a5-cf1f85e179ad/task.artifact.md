@@ -1,0 +1,12 @@
+- [x] Fix documentation errors
+    - [x] Fix roadmap link in `README.md` (Verified link was already correct, checked for other errors)
+    - [x] Fix typo in `DEVELOPMENT.md`
+- [x] Fix build configuration
+    - [x] Add `kotlin.daemon.jvmargs` to `gradle.properties`
+- [x] Fix lint warnings in `MainActivity.kt`
+    - [x] Add parameter names for boolean literals in `mutableStateOf`, `WholphinTheme`, and `screensaverService.stop`
+    - [x] Lift 'return' out of 'if' in `dispatchKeyEvent`
+    - [x] Add clarifying parentheses for complex boolean expressions in `isPlayback`
+- [x] Verification
+    - [x] Run `:app:assembleDebug` (Resolved memory error)
+    - [x] Run `analyze_file` on `MainActivity.kt` (Zero warnings)

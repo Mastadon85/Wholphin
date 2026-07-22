@@ -75,6 +75,7 @@ fun NowPlayingOverlay(
     onClickStop: () -> Unit,
     onClickSlideshow: () -> Unit,
     lyricsFocusRequester: FocusRequester,
+    onClickPlayRecommended: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -144,7 +145,12 @@ fun NowPlayingOverlay(
             )
         }
         if (queue.isEmpty()) {
-            Text("No items")
+            Button(
+                onClick = onClickPlayRecommended,
+                modifier = Modifier.padding(vertical = 16.dp).align(Alignment.CenterHorizontally)
+            ) {
+                Text("Play Recommended Music")
+            }
         } else {
             Text(
                 text = stringResource(R.string.queue),

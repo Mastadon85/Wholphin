@@ -353,6 +353,7 @@ fun NowPlayingPage(
                 onClickStop = { viewModel.stop() },
                 onClickSlideshow = { viewModel.navigationManager.navigateTo(Destination.PhotoAlbumPicker) },
                 lyricsFocusRequester = lyricsFocusRequester,
+                onClickPlayRecommended = {},
                 modifier =
                     Modifier
                         .fillMaxWidth()

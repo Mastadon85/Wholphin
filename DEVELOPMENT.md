@@ -30,7 +30,7 @@ It is recommended to use a recent version of [Android Studio](https://developer.
 
 Code formatting should follow [ktlint's](https://github.com/pinterest/ktlint) rules. Find the `ktlint` version in [`.pre-commit-config.yaml`](./.pre-commit-config.yaml). Optionally, install the [ktlint plugin](https://plugins.jetbrains.com/plugin/15057-ktlint) in Android Studio to run automatically. Configure the version in `Settings->Tools->KtLint->Ruleset Version`.
 
-Also, it's recommend to add an extra ruleset jar for Compose-specific KtLint: https://mrmans0n.github.io/compose-rules/ktlint/#using-with-ktlint-cli-or-the-ktlint-intellij-plugin
+Also, it's recommended to add an extra ruleset jar for Compose-specific KtLint: https://mrmans0n.github.io/compose-rules/ktlint/#using-with-ktlint-cli-or-the-ktlint-intellij-plugin
 
 Also setup [pre-commit](https://github.com/pre-commit/pre-commit) which will run `ktlint` as well on each commit, plus check for other common issues.
 

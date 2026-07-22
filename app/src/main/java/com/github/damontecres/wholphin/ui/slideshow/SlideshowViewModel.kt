@@ -66,6 +66,8 @@ class SlideshowViewModel
         private val imageUrlService: ImageUrlService,
         private val userPreferencesService: UserPreferencesService,
         private val screensaverService: ScreensaverService,
+        val navigationManager: com.github.damontecres.wholphin.services.NavigationManager,
+        val musicService: com.github.damontecres.wholphin.services.MusicService,
         @Assisted val slideshowSettings: Destination.Slideshow,
     ) : ViewModel(),
         Player.Listener {
@@ -90,7 +92,43 @@ class SlideshowViewModel
          */
         val slideshowActive = state.map { it.enabled && !it.paused }
 
-        var slideshowDelay by Delegates.notNull<Long>()
+        private val _slideShowDelayMs = MutableStateFlow(AppPreference.SlideshowDuration.defaultValue)
+        val slideShowDelayMs: StateFlow<Long> = _slideShowDelayMs
+
+        private val _crossFadeDuration = MutableStateFlow(750L)
+        val crossFadeDuration: StateFlow<Long> = _crossFadeDuration
+
+        private val _zoomPanEnabled = MutableStateFlow(true)
+        val zoomPanEnabled: StateFlow<Boolean> = _zoomPanEnabled
+
+        fun setSlideShowDelayMs(delay: Long) {
+            _slideShowDelayMs.value = delay
+        }
+
+        fun setCrossFadeDuration(duration: Long) {
+            _crossFadeDuration.value = duration
+        }
+
+        fun setZoomPanEnabled(enabled: Boolean) {
+            _zoomPanEnabled.value = enabled
+        }
+
+        fun playRecommendedMusic() {
+            viewModelScope.launchIO {
+                serverRepository.currentUser?.let { user ->
+                    val request = GetItemsRequest(
+                        userId = user.id,
+                        includeItemTypes = listOf(BaseItemKind.AUDIO),
+                        recursive = true,
+                        sortBy = listOf(org.jellyfin.sdk.model.api.ItemSortBy.DATE_PLAYED),
+                        sortOrder = listOf(org.jellyfin.sdk.model.api.SortOrder.DESCENDING),
+                        limit = 50
+                    )
+                    val pager = ApiRequestPager(api, request, GetItemsRequestHandler, viewModelScope).init()
+                    musicService.setQueue(pager, 0, true)
+                }
+            }
+        }
 
         private val _imageFilter = MutableStateFlow(VideoFilter())
         val imageFilter: StateFlow<VideoFilter> = _imageFilter
@@ -117,9 +155,10 @@ class SlideshowViewModel
                     player.addListener(this@SlideshowViewModel)
 
                     val photoPrefs = appPreferences.photoPreferences
-                    slideshowDelay =
+                    val delay =
                         photoPrefs.slideshowDuration.takeIf { it >= AppPreference.SlideshowDuration.min }
                             ?: AppPreference.SlideshowDuration.defaultValue
+                    _slideShowDelayMs.value = delay
                     val includeItemTypes =
                         if (photoPrefs.slideshowPlayVideos) {
                             listOf(BaseItemKind.PHOTO, BaseItemKind.VIDEO)
@@ -336,7 +375,7 @@ class SlideshowViewModel
             }
         }
 
-        fun pulseSlideshow() = pulseSlideshow(slideshowDelay)
+        fun pulseSlideshow() = pulseSlideshow(_slideShowDelayMs.value)
 
         fun pulseSlideshow(milliseconds: Long) {
             Timber.v("pulseSlideshow $milliseconds")
@@ -420,7 +459,7 @@ class SlideshowViewModel
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_ENDED) {
-                pulseSlideshow(slideshowDelay)
+                pulseSlideshow(_slideShowDelayMs.value)
             }
         }
     }

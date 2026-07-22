@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,6 +73,7 @@ import org.jellyfin.sdk.model.api.MediaType
 import timber.log.Timber
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.launch
 
 private const val TAG = "ImagePage"
 private const val DEBUG = false
@@ -114,15 +116,44 @@ fun SlideshowPage(
             var zoomFactor by rememberSaveable { mutableFloatStateOf(1f) }
             val isZoomed = zoomFactor * 100 > 102
             var rotation by rememberSaveable { mutableFloatStateOf(0f) }
-            var showOverlay by rememberSaveable { mutableStateOf(false) }
+            val controllerViewState = remember { com.github.damontecres.wholphin.ui.playback.ControllerViewState(3000L, true) }
+            LaunchedEffect(controllerViewState) {
+                controllerViewState.observe()
+            }
             var showFilterDialog by rememberSaveable { mutableStateOf(false) }
             var panX by rememberSaveable { mutableFloatStateOf(0f) }
             var panY by rememberSaveable { mutableFloatStateOf(0f) }
+            
+            LaunchedEffect(controllerViewState.controlsVisible, showFilterDialog) {
+                if (!controllerViewState.controlsVisible && !showFilterDialog) {
+                    viewModel.unpauseSlideshow()
+                    viewModel.pulseSlideshow()
+                }
+            }
+            
+            val scope = rememberCoroutineScope()
+            
+            val musicService = viewModel.musicService
+            val musicServiceState by musicService.state.collectAsState()
+            val queue = com.github.damontecres.wholphin.services.rememberQueue(
+                musicService.player,
+                musicServiceState.queueVersion,
+                musicServiceState.queueSize
+            )
+            val currentAudio = queue.getOrNull(musicServiceState.currentIndex)
+            val nowPlayingState = com.github.damontecres.wholphin.ui.detail.music.NowPlayingState(
+                musicServiceState = musicServiceState
+            )
+            val lyricsFocusRequester = remember { FocusRequester() }
+            
+            val slideShowDelayMs by viewModel.slideShowDelayMs.collectAsState()
+            val crossFadeDuration by viewModel.crossFadeDuration.collectAsState()
+            val zoomPanEnabled by viewModel.zoomPanEnabled.collectAsState()
 
             val slideshowControls =
                 object : SlideshowControls {
                     override fun startSlideshow() {
-                        showOverlay = false
+                        controllerViewState.hideControls()
                         viewModel.startSlideshow()
                     }
 
@@ -229,7 +260,7 @@ fun SlideshowPage(
                         .focusRequester(focusRequester)
                         .focusable()
                         .onKeyEvent {
-                            val isOverlayShowing = showOverlay || showFilterDialog
+                            val isOverlayShowing = controllerViewState.controlsVisible || showFilterDialog
                             var result = false
                             if (!isOverlayShowing) {
                                 if (longPressing && it.type == KeyEventType.KeyUp) {
@@ -291,17 +322,21 @@ fun SlideshowPage(
                                     }
                                 }
                             } else if (isOverlayShowing && it.key == Key.Back) {
-                                showOverlay = false
-                                viewModel.unpauseSlideshow()
+                                controllerViewState.hideControls()
+                                // The LaunchedEffect will handle unpausing
                                 result = true
                             } else if (!isOverlayShowing && (isDpad(it) || isEnterKey(it))) {
-                                showOverlay = true
+                                controllerViewState.showControls()
                                 viewModel.pauseSlideshow()
                                 result = true
                             }
                             if (result) {
                                 // Handled the key, so reset the slideshow timer
                                 viewModel.pulseSlideshow()
+                            }
+                            // Also pulse the controls so they stay visible if already showing
+                            if (controllerViewState.controlsVisible) {
+                                controllerViewState.pulseControls()
                             }
                             result
                         },
@@ -409,7 +444,11 @@ fun SlideshowPage(
                                         .Builder(LocalContext.current)
                                         .data(imageState.url)
                                         .size(Size.ORIGINAL)
-                                        .transitionFactory(CrossFadeFactory(750.milliseconds))
+                                        .apply {
+                                            if (crossFadeDuration > 0) {
+                                                transitionFactory(CrossFadeFactory(crossFadeDuration.milliseconds))
+                                            }
+                                        }
                                         .useExistingImageAsPlaceholder(true)
                                         .build(),
                                 contentDescription = null,
@@ -449,7 +488,7 @@ fun SlideshowPage(
                     }
                 }
                 AnimatedVisibility(
-                    showOverlay,
+                    controllerViewState.controlsVisible,
                     enter = slideInVertically { it },
                     exit = slideOutVertically { it },
                     modifier = Modifier.align(Alignment.BottomStart),
@@ -461,18 +500,17 @@ fun SlideshowPage(
 
                         is ImageLoadingState.Success -> {
                             val imageState = st.image
-                            ImageOverlay(
+                            SlideshowCombinedOverlay(
                                 modifier =
                                     Modifier
-                                        .fillMaxWidth()
-                                        .background(AppColors.TransparentBlack50),
-                                onDismiss = { showOverlay = false },
+                                        .fillMaxWidth(),
+                                onDismiss = { controllerViewState.hideControls() },
                                 player = player,
                                 slideshowControls = slideshowControls,
                                 slideshowEnabled = slideshowState.enabled,
-                                image = imageState,
                                 position = position,
                                 count = pager?.size ?: -1,
+                                image = imageState,
                                 onClickItem = {},
                                 onLongClickItem = {},
                                 onZoom = ::zoom,
@@ -480,9 +518,37 @@ fun SlideshowPage(
                                 onReset = { reset(true) },
                                 onShowFilterDialogClick = {
                                     showFilterDialog = true
-                                    showOverlay = false
+                                    controllerViewState.hideControls()
                                     viewModel.pauseSlideshow()
                                 },
+                                nowPlayingState = nowPlayingState,
+                                musicPlayer = musicService.player,
+                                currentAudio = currentAudio,
+                                queue = queue,
+                                controllerViewState = controllerViewState,
+                                onClickSong = { index, _ -> scope.launch { musicService.playIndex(index) } },
+                                onLongClickSong = { _, _ -> },
+                                onClickMore = { },
+                                onMoveQueue = { index, dir -> scope.launch { musicService.moveQueue(index, dir) } },
+                                onClickMoreItem = { _, _ -> },
+                                onClickStop = { scope.launch { musicService.stop() } },
+                                onClickSlideshow = { },
+                                lyricsFocusRequester = lyricsFocusRequester,
+                                slideShowDelayMs = slideShowDelayMs,
+                                onSlideShowDelayMsChange = viewModel::setSlideShowDelayMs,
+                                crossFadeDuration = crossFadeDuration,
+                                onCrossFadeDurationChange = viewModel::setCrossFadeDuration,
+                                zoomPanEnabled = zoomPanEnabled,
+                                onZoomPanEnabledChange = viewModel::setZoomPanEnabled,
+                                onClickPlayRecommended = viewModel::playRecommendedMusic,
+                                isShuffleEnabled = musicService.player.shuffleModeEnabled,
+                                onShuffleToggle = {
+                                    val newShuffle = !musicService.player.shuffleModeEnabled
+                                    musicService.player.shuffleModeEnabled = newShuffle
+                                },
+                                onChangeAlbumClick = {
+                                    viewModel.navigationManager.navigateTo(com.github.damontecres.wholphin.ui.nav.Destination.PhotoAlbumPicker)
+                                }
                             )
                         }
                     }
