@@ -478,6 +478,7 @@ fun PlaylistDetails(
                     )
                 }
         },
+        onClickSlideshow = { viewModel.navigationManager.navigateTo(Destination.PhotoAlbumPicker) },
         filterAndSort = state.filterAndSort,
         onFilterAndSortChange = viewModel::loadItems,
         getPossibleFilterValues = viewModel::getFilterOptionValues,
@@ -525,6 +526,7 @@ fun PlaylistDetailsContent(
     onClickIndex: (Int, BaseItem) -> Unit,
     onLongClickIndex: (Int, BaseItem) -> Unit,
     onClickPlay: (shuffle: Boolean) -> Unit,
+    onClickSlideshow: () -> Unit,
     onChangeBackdrop: (BaseItem) -> Unit,
     filterAndSort: FilterAndSort,
     onFilterAndSortChange: (GetItemsFilter, SortAndDirection) -> Unit,
@@ -567,6 +569,7 @@ fun PlaylistDetailsContent(
                 PlaylistDetailsHeader(
                     focusedItem = focusedItem,
                     onClickPlay = onClickPlay,
+                    onClickSlideshow = onClickSlideshow,
                     playButtonFocusRequester = playButtonFocusRequester,
                     focusRequester = if (items.isEmpty()) focusRequester else remember { FocusRequester() },
                     filterAndSort = filterAndSort,
@@ -695,6 +698,7 @@ fun PlaylistDetailsContent(
 fun PlaylistDetailsHeader(
     focusedItem: BaseItem?,
     onClickPlay: (shuffle: Boolean) -> Unit,
+    onClickSlideshow: () -> Unit,
     playButtonFocusRequester: FocusRequester,
     focusRequester: FocusRequester,
     filterAndSort: FilterAndSort,
@@ -721,6 +725,11 @@ fun PlaylistDetailsHeader(
                 title = R.string.shuffle,
                 iconStringRes = R.string.fa_shuffle,
                 onClick = { onClickPlay.invoke(true) },
+            )
+            ExpandableFaButton(
+                title = R.string.slideshow_with_music,
+                iconStringRes = R.string.fa_images,
+                onClick = onClickSlideshow,
             )
         }
         Row(

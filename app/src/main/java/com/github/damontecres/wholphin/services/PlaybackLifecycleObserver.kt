@@ -2,6 +2,7 @@ package com.github.damontecres.wholphin.services
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import dagger.Lazy
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import javax.inject.Inject
 
@@ -15,6 +16,7 @@ class PlaybackLifecycleObserver
         private val navigationManager: NavigationManager,
         private val playerFactory: PlayerFactory,
         private val themeSongPlayer: ThemeSongPlayer,
+        private val musicService: Lazy<MusicService>,
     ) : DefaultLifecycleObserver {
         private var wasPlaying: Boolean? = null
 
@@ -36,6 +38,7 @@ class PlaybackLifecycleObserver
                 it.pause()
             }
             themeSongPlayer.stop()
+            musicService.get().player.pause()
         }
 
         override fun onStop(owner: LifecycleOwner) {

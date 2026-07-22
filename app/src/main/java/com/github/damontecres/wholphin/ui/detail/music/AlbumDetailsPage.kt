@@ -76,6 +76,7 @@ import com.github.damontecres.wholphin.ui.data.AddPlaylistViewModel
 import com.github.damontecres.wholphin.ui.data.RowColumn
 import com.github.damontecres.wholphin.ui.detail.PlaylistDialog
 import com.github.damontecres.wholphin.ui.ifElse
+import com.github.damontecres.wholphin.ui.nav.Destination
 import com.github.damontecres.wholphin.ui.launchDefault
 import com.github.damontecres.wholphin.ui.launchIO
 import com.github.damontecres.wholphin.ui.letNotEmpty
@@ -413,6 +414,7 @@ fun AlbumDetailsPage(
                                         MusicButtonActions(
                                             onClickPlay = { viewModel.play(it, 0) },
                                             onClickInstantMix = { viewModel.startInstantMix(album.id) },
+                                            onClickSlideshow = { viewModel.navigationManager.navigateTo(Destination.PhotoAlbumPicker) },
                                             onClickFavorite = {
                                                 viewModel.setFavorite(
                                                     album.id,

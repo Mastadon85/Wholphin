@@ -69,6 +69,14 @@ fun MusicExpandableButtons(
                 modifier = Modifier.onFocusChanged(buttonOnFocusChanged),
             )
         }
+        item("slideshow") {
+            ExpandableFaButton(
+                title = R.string.slideshow_with_music,
+                iconStringRes = R.string.fa_images,
+                onClick = actions.onClickSlideshow,
+                modifier = Modifier.onFocusChanged(buttonOnFocusChanged),
+            )
+        }
         item("favorite") {
             ExpandableFaButton(
                 title = if (favorite) R.string.remove_favorite else R.string.add_favorite,
@@ -102,6 +110,7 @@ fun MusicExpandableButtons(
 data class MusicButtonActions(
     val onClickPlay: (shuffle: Boolean) -> Unit,
     val onClickInstantMix: () -> Unit,
+    val onClickSlideshow: () -> Unit,
     val onClickFavorite: () -> Unit,
     val onClickMore: () -> Unit,
     val onConfirmDelete: () -> Unit,

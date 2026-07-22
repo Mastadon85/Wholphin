@@ -74,6 +74,7 @@ import com.github.damontecres.wholphin.ui.ifElse
 import com.github.damontecres.wholphin.ui.launchDefault
 import com.github.damontecres.wholphin.ui.launchIO
 import com.github.damontecres.wholphin.ui.letNotEmpty
+import com.github.damontecres.wholphin.ui.nav.Destination
 import com.github.damontecres.wholphin.ui.rememberPosition
 import com.github.damontecres.wholphin.ui.toBaseItems
 import com.github.damontecres.wholphin.ui.tryRequestFocus
@@ -391,6 +392,7 @@ fun ArtistDetailsPage(
                                                 viewModel.play(artist, shuffled = shuffled)
                                             },
                                             onClickInstantMix = { viewModel.startInstantMix(artist.id) },
+                                            onClickSlideshow = { viewModel.navigationManager.navigateTo(Destination.PhotoAlbumPicker) },
                                             onClickFavorite = {
                                                 viewModel.setFavorite(
                                                     artist.id,
